@@ -1,25 +1,28 @@
 local addon, ns = ...
 local cfg = ns.cfg
 
+  local mult = 768/string.match(GetCVar("gxResolution"), "%d+x(%d+)")/GetCVar("uiScale")
+  local function scale(x) return mult*math.floor(x+.5) end
+
 SetCVar("consolidateBuffs",0) -- disabling consolidated buffs (temp.)
 SetCVar("buffDurations",1) -- enabling buff durations
 BUFFS_PER_ROW = 16
-DEBUFF_MAX_DISPLAY = 16
+DEBUFF_MAX_DISPLAY = 6
 
 local backdrop_tab = { 
-    bgFile = cfg.backdrop_texture, 
+     bgFile = cfg.backdrop_texture, 
     edgeFile = cfg.backdrop_edge_texture,
-    tile = false, tileSize = 0, edgeSize = 5, 
-    insets = {left = 5, right = 5, top = 5, bottom = 5,},}
+    tile = false, tileSize = 0, edgeSize = scale(1), 
+	insets = { left = -scale(1), right = -scale(1), top = -scale(1), bottom = -scale(1)}}
 local overlay
 
 local make_backdrop = function(f)
-	f:SetFrameLevel(20)
-	f:SetPoint("TOPLEFT",-2.5,2.5)
-	f:SetPoint("BOTTOMRIGHT",2.5,-2.5)
+	--f:SetFrameLevel(5)
+	f:SetPoint("TOPLEFT",-1,1)
+	f:SetPoint("BOTTOMRIGHT",1,-1)
 	f:SetBackdrop(backdrop_tab);
-	f:SetBackdropColor(0,0,0,0)
-	f:SetBackdropBorderColor(0,0,0,1)
+	f:SetBackdropColor(.1,.1,.1,1)
+	f:SetBackdropBorderColor(.3,.3,.3,1)
 end
 
 ConsolidatedBuffs:ClearAllPoints()
@@ -49,14 +52,15 @@ for i = 1, 3 do
 	h:SetAllPoints(te)
 	h:SetFrameLevel(30)
 	te:SetSize(cfg.iconsize,cfg.iconsize)
-	teicon:SetPoint("BOTTOMRIGHT", te, -2, 2)
+	teicon:SetPoint("TOPLEFT", te, 1, -1)
+	teicon:SetPoint("BOTTOMRIGHT", te, -1, 1)
 	teicon:SetTexCoord(.08, .92, .08, .92)
-	teicon:SetPoint("TOPLEFT", te, 2, -2)
 	teduration:ClearAllPoints()
 	teduration:SetParent(h)
 	teduration:SetPoint("BOTTOM", 0, cfg.timeYoffset)
 	teduration:SetFont(cfg.font, cfg.timefontsize, "THINOUTLINE")
 	local bg = CreateFrame("Frame", nil, te)
+	bg:SetFrameLevel(0)
 	make_backdrop(bg)
 end
 
@@ -72,14 +76,15 @@ local function CreateBuffStyle(buttonName, i, debuff)
 		h:SetAllPoints(buff)
 		h:SetFrameLevel(30)
 		icon:SetTexCoord(.08, .92, .08, .92)
-		icon:SetPoint("TOPLEFT", buff, 2, -2)
-		icon:SetPoint("BOTTOMRIGHT", buff, -2, 2)
+		icon:SetPoint("TOPLEFT", buff, 1, -1)
+		icon:SetPoint("BOTTOMRIGHT", buff, -1, 1)
 		buff:SetSize(cfg.iconsize,cfg.iconsize)
 		duration:ClearAllPoints()
 		duration:SetParent(h)
 		duration:SetPoint("BOTTOM", 0, cfg.timeYoffset)
 		duration:SetFont(cfg.font, cfg.timefontsize, "THINOUTLINE")
 		local bg = CreateFrame("Frame", buttonName..i.."Background", buff)
+		bg:SetFrameLevel(0)
 		make_backdrop(bg)
 		count:SetParent(h)
 		count:ClearAllPoints()
@@ -89,8 +94,8 @@ local function CreateBuffStyle(buttonName, i, debuff)
 	if border then 
 		border:SetTexture(cfg.auratex)
 		border:SetTexCoord(0.03, 0.97, 0.03, 0.97)
-		border:SetPoint("TOPLEFT",2.7,-2.7)
-		border:SetPoint("BOTTOMRIGHT",-2.7,2.7)
+		border:SetPoint("TOPLEFT",-scale(1),scale(1))
+		border:SetPoint("BOTTOMRIGHT",scale(1),-scale(1))
 	end
 end
 
@@ -150,7 +155,7 @@ local function OverrideDebuffAnchors(buttonName, i)
 	if i == 1 then
 		debuff:SetPoint(unpack(cfg.DEBUFFpos))
 	else
-		debuff:SetPoint("RIGHT", _G[buttonName..(i-1)], "LEFT", -cfg.spacing, 0)
+		debuff:SetPoint("LEFT", _G[buttonName..(i-1)], "RIGHT", cfg.spacing, 0)
 	end
 	if (dtype ~= nil) then
 		color = DebuffTypeColor[dtype]
